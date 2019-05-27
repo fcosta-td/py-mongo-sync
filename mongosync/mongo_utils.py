@@ -32,6 +32,20 @@ def connect(host, port, **kwargs):
         mc[authdb].authenticate(username, password)
     return mc
 
+def connect_src(host, port, **kwargs):
+    """ Connect exactly to host specified in config.
+    Authenticate automatically if necessary.
+    """
+    authdb = kwargs.get('authdb', 'admin')  # default authdb is 'admin'
+    username = kwargs.get('username', '')
+    password = kwargs.get('password', '')
+    w = kwargs.get('w', 1)
+    mc = pymongo.MongoClient(host, port, connect=True, serverSelectionTimeoutMS=3000, w=w)
+    if username and password and authdb:
+        # raise exception if auth failed here
+        mc[authdb].authenticate(username, password)
+    return mc
+
 
 def get_version(arg):
     """ Get version.

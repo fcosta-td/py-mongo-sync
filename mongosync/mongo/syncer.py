@@ -21,7 +21,7 @@ class MongoSyncer(CommonSyncer):
         if not isinstance(self._conf.src_conf, MongoConfig):
             raise RuntimeError('invalid src config type')
         self._src = MongoHandler(self._conf.src_conf)
-        if not self._src.connect():
+        if not self._src.connect_src():
             raise RuntimeError('connect to mongodb(src) failed: %s' % self._conf.src_hostportstr)
         if not isinstance(self._conf.dst_conf, MongoConfig):
             raise RuntimeError('invalid dst config type')
