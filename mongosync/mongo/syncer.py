@@ -21,7 +21,7 @@ class MongoSyncer(CommonSyncer):
         if not isinstance(self._conf.src_conf, MongoConfig):
             raise RuntimeError('invalid src config type')
         self._src = MongoHandler(self._conf.src_conf)
-        if not self._src.connect_src():
+        if not self._src.connect(force_host=True):
             raise RuntimeError('connect to mongodb(src) failed: %s' % self._conf.src_hostportstr)
         if not isinstance(self._conf.dst_conf, MongoConfig):
             raise RuntimeError('invalid dst config type')
@@ -125,7 +125,7 @@ class MongoSyncer(CommonSyncer):
                 self._progress_logger.add(src_ns, n, done=True)
                 return
             except pymongo.errors.AutoReconnect:
-                self._src.reconnect()
+                self._src.reconnect(force_host=True)
 
     def _sync_large_collection(self, namespace_tuple, split_points):
         """ Sync large collection.
@@ -181,7 +181,7 @@ class MongoSyncer(CommonSyncer):
     def _sync_collection_with_query(self, namespace_tuple, query, prog_q, res_q):
         """ Sync collection with query.
         """
-        self._src.reconnect()
+        self._src.reconnect(force_host=True)
         self._dst.reconnect()
 
         src_dbname, src_collname = namespace_tuple
@@ -234,7 +234,7 @@ class MongoSyncer(CommonSyncer):
                 res_q.join_thread()
                 return
             except pymongo.errors.AutoReconnect:
-                self._src.reconnect()
+                self._src.reconnect(force_host=True)
 
     def _replay_oplog(self, start_optime):
         """ Replay oplog.
@@ -344,7 +344,7 @@ class MongoSyncer(CommonSyncer):
                         continue
                 except pymongo.errors.AutoReconnect as e:
                     log.error(e)
-                    self._src.reconnect()
+                    self._src.reconnect(force_host=True)
                     break
 
     def bulk_write(self, mc, dbname, collname, reqs):

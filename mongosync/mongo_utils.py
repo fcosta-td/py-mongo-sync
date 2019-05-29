@@ -1,7 +1,7 @@
 import pymongo
 
 
-def connect(host, port, **kwargs):
+def connect(host, port, force_host=False, **kwargs):
     """ Connect and return a available handler.
     Recognize replica set automatically.
     Authenticate automatically if necessary.
@@ -15,8 +15,10 @@ def connect(host, port, **kwargs):
     username = kwargs.get('username', '')
     password = kwargs.get('password', '')
     w = kwargs.get('w', 1)
-    replset_name = get_replica_set_name(host, port, **kwargs)
-    if replset_name:
+    replset_name = ""
+    if not force_host:
+        replset_name = get_replica_set_name(host, port, **kwargs)
+    if force_host and replset_name:
         mc = pymongo.MongoClient(
                 host=host,
                 port=port,
@@ -31,21 +33,6 @@ def connect(host, port, **kwargs):
         # raise exception if auth failed here
         mc[authdb].authenticate(username, password)
     return mc
-
-def connect_src(host, port, **kwargs):
-    """ Connect exactly to host specified in config.
-    Authenticate automatically if necessary.
-    """
-    authdb = kwargs.get('authdb', 'admin')  # default authdb is 'admin'
-    username = kwargs.get('username', '')
-    password = kwargs.get('password', '')
-    w = kwargs.get('w', 1)
-    mc = pymongo.MongoClient(host, port, connect=True, serverSelectionTimeoutMS=3000, w=w)
-    if username and password and authdb:
-        # raise exception if auth failed here
-        mc[authdb].authenticate(username, password)
-    return mc
-
 
 def get_version(arg):
     """ Get version.

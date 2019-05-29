@@ -19,17 +19,19 @@ class MongoHandler(object):
     def __del__(self):
         self.close()
 
-    def connect(self):
+    def connect(self,force_host = False):
         """ Connect to server.
         """
+
         try:
             if isinstance(self._conf.hosts, unicode):
                 host, port = mongo_utils.parse_hostportstr(self._conf.hosts)
-                self._mc = mongo_utils.connect(host, port,
+                self._mc = mongo_utils.connect(host, port, force_host=force_host,
                                                authdb=self._conf.authdb,
                                                username=self._conf.username,
                                                password=self._conf.password)
-                self._mc.admin.command('ismaster')
+                if not force_host:
+                    self._mc.admin.command('ismaster')
                 return True
             elif isinstance(self._conf.__hosts, list):
                 # TODO
@@ -38,14 +40,18 @@ class MongoHandler(object):
             log.error('connect failed: %s' % e)
             return False
 
-    def reconnect(self):
+    def reconnect(self,force_host = False):
         """ Try to reconnect until success.
         """
+
+        print ("reconnect force_host: %s" % force_host )
+
         while True:
             try:
                 self.close()
-                self.connect()
-                self.client().admin.command('ismaster')
+                self.connect(force_host)
+                if not force_host:
+                    self.client().admin.command('ismaster')
                 return
             except Exception as e:
                 log.error('reconnect failed: %s' % e)
