@@ -1,7 +1,7 @@
 import pymongo
 
 
-def connect(host, port, force_host=False, **kwargs):
+def connect(host, port, force_host="primary", **kwargs):
     """ Connect and return a available handler.
     Recognize replica set automatically.
     Authenticate automatically if necessary.
@@ -16,9 +16,9 @@ def connect(host, port, force_host=False, **kwargs):
     password = kwargs.get('password', '')
     w = kwargs.get('w', 1)
     replset_name = ""
-    if not force_host:
+    if force_host == "primary":
         replset_name = get_replica_set_name(host, port, **kwargs)
-    if force_host and replset_name:
+    if replset_name:
         mc = pymongo.MongoClient(
                 host=host,
                 port=port,
